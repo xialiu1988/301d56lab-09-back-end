@@ -27,6 +27,9 @@ Finish time: _10:00am____
 Actual time needed to complete: __1hr___
 
 
+
+
+
 Number and name of feature: _______yelp_________________________
 
 Estimate of time needed to complete: _1hr____
@@ -36,6 +39,10 @@ Start time: ___10:00am__
 Finish time: ___11:00am__
 
 Actual time needed to complete: _1hr____
+
+
+
+
 
 
 
