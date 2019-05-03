@@ -210,8 +210,10 @@ function Yelp(item){
   this.price=item.price;
   //   this.phone=item.phone;
   this.image_url=item.image_url;
+  this.created_at=Date.now();
 }
-
+Yelp.tableName='yelps';
+Yelp.deleteByLocationId=deleteByLocationId;
 
 function getYelp(request,response){
   const handler={
@@ -233,7 +235,7 @@ function getYelp(request,response){
 
 //save to db
 Yelp.prototype.save=function(id){
-  const SQL = `INSERT INTO yelps (name,rating,price,image_url,location_id) VALUES ($1,$2,$3,$4,$5);`;
+  const SQL = 'INSERT INTO yelps (name,rating,price,image_url,created_at,location_id) VALUES ($1,$2,$3,$4,$5,$6);';
   const values=Object.values(this);
   values.push(id);
   client.query(SQL,values);
@@ -245,8 +247,17 @@ Yelp.findYelp=function(handler){
   client.query(SQL,[handler.location.id])
     .then(result=>{
       if(result.rowCount>0){
-        handler.cacheHit(result);
+        let ageOfResultsInMinutes = (Date.now() - result.rows[0].created_at) / (1000 * 60);
+        if (ageOfResultsInMinutes > 1) {
+          Yelp.deleteByLocationId('yelps', handler.location.id);
+          handler.cacheMiss();
+        }
+        else{
+          handler.cacheHit(result);
+        }
       }
+
+
       else{
         handler.cacheMiss();
       }
@@ -264,6 +275,7 @@ Yelp.getYelpinfo=function(location){
       const yelpSummaries=result.body.businesses.map(item=>{
         const summary =new Yelp(item);
         summary.save(location.id);
+        console.log('saving to db');
         return summary;
       });
       return yelpSummaries;
@@ -283,7 +295,11 @@ function Movie(item){
   this.release_date=item.release_date;
   this.popularity=item.popularity;
   this.released_on=item.release_data;
+  this.created_at=Date.now();
 }
+
+Movie.tableName='movies';
+Movie.deleteByLocationId=deleteByLocationId;
 
 function getMovies(request,response){
   const handler={
@@ -302,7 +318,7 @@ function getMovies(request,response){
 
 
 Movie.prototype.save=function(id){
-  const SQL = `INSERT INTO movies (title,overview,average_votes,total_votes,image_url,release_date,popularity,released_on,location_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9);`;
+  const SQL = `INSERT INTO movies (title,overview,average_votes,total_votes,image_url,release_date,popularity,released_on,created_at,location_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10);`;
   const values=Object.values(this);
   values.push(id);
   client.query(SQL,values);
@@ -315,7 +331,15 @@ Movie.findMovie=function(handler){
   client.query(SQL,[handler.location.id])
     .then(result=>{
       if(result.rowCount>0){
-        handler.cacheHit(result);
+
+        let ageOfResultsInMinutes = (Date.now() - result.rows[0].created_at) / (1000 * 60);
+        if (ageOfResultsInMinutes > 1) {
+          Movie.deleteByLocationId('movies', handler.location.id);
+          handler.cacheMiss();
+        }
+
+        else{ handler.cacheHit(result);}
+
       }
       else{
         handler.cacheMiss();
