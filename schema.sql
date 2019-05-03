@@ -16,6 +16,7 @@ CREATE TABLE weather(
 id SERIAL PRIMARY KEY,
 forecast VARCHAR(255),
 time VARCHAR(255),
+created_at BIGINT,
 location_id INTEGER,
 FOREIGN KEY(location_id) REFERENCES locations(id)
 );
