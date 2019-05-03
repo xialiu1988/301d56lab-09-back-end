@@ -24,6 +24,7 @@ function Location(query, res) {
 }
 
 function Weather(day) {
+  this.tableName='weather';
   this.forecast = day.summary;
   this.time = new Date(day.time * 1000).toDateString();
   this.created_at=Date.now();
@@ -37,11 +38,15 @@ function deleteByLocationId(table,city){
 }
 
 function Event(event) {
+  this.tableName='events';
   this.link = event.url;
   this.name = event.name.text;
   this.event_date = new Date(Date.parse(event.start.local)).toDateString();
   this.summary = event.summary;
+  this.created_at=Date.now();
 }
+Event.tableName='events';
+Event.deleteByLocationId=deleteByLocationId;
 
 app.get('/location', (req, res) => {
   getLatLong(req.query.data)
@@ -139,8 +144,8 @@ function notExist(url,res){
       .then(result => {
         const events = result.body.events.map(eventData => {
           const newevent = new Event(eventData);
-          let insertStatement='INSERT INTO events (link,name,event_date,summary,location_id) VALUES ($1,$2,$3,$4,$5)';
-          let eventValues=[newevent.link,newevent.name,newevent.event_date,newevent.summary,locationID];
+          let insertStatement='INSERT INTO events (link,name,event_date,summary,created_at,location_id) VALUES ($1,$2,$3,$4,$5,$6)';
+          let eventValues=[newevent.link,newevent.name,newevent.event_date,newevent.summary,newevent.created_at,locationID];
           client.query(insertStatement,eventValues);
           return newevent;
         });
@@ -160,7 +165,8 @@ function lookupDatabase(sqlStatement,query,res,url){
         if(url.includes('forecast')){
           console.log('hitting the cache invalidation');
           let ageOfResultsInMin=(Date.now()-data.rows[0].created_at)/(1000*60);
-          if(ageOfResultsInMin>30){
+          //check if the weather data is longer than 15 mins just for test, if longer than 3 min delete the old one and get new data.
+          if(ageOfResultsInMin>15){
             console.log('this is old data, gonna delete it');
             Weather.deleteByLocationId('weather',query.id);
             notExist(url,res);
@@ -172,7 +178,16 @@ function lookupDatabase(sqlStatement,query,res,url){
         }
         else{
           console.log('exsits data but not weather');
-          exist(data.rows,res);
+          let ageOfResultsInMin=(Date.now()-data.rows[0].created_at)/(1000*60);
+          //check if the events data is longer than 1 mins just for test, if longer than 1 min delete the old one and get new data.
+          if(ageOfResultsInMin>1){
+            console.log('this is old  event data, gonna delete it');
+            Event.deleteByLocationId('events',query.id);
+            notExist(url,res);
+          }
+          else{
+            exist(data.rows,res);
+          }
         }
       }
       else{
