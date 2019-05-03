@@ -16,15 +16,37 @@ node js, postgresql
 
 ## Change Log
 
-05-03-2019 9:59pm - Application now has a fully-functional express server, with a GET route for the location resource.
+Number and name of feature: ________movies________________________
 
-05-03-2019 10:59pm - Application now has a fully-functional express server, with a GET route for the location resource.
+Estimate of time needed to complete: _1hr____
 
-05-03-2019 11:24pm - Application now has a fully-functional express server, with a GET route for the location resource.
+Start time: _9:00am____
 
-05-03-2019 12:30pm - Application now has a fully-functional express server, with a GET route for the location resource.
+Finish time: _10:00am____
 
-05-03-2019 12:59pm - Application now has a fully-functional express server, with a GET route for the location resource.
+Actual time needed to complete: __1hr___
 
+
+Number and name of feature: _______yelp_________________________
+
+Estimate of time needed to complete: _1hr____
+
+Start time: ___10:00am__
+
+Finish time: ___11:00am__
+
+Actual time needed to complete: _1hr____
+
+
+
+Number and name of feature: ______cache invalidation__________________________
+
+Estimate of time needed to complete: _2hr____
+
+Start time: ___11:00am__
+
+Finish time: _1:00pm____
+
+Actual time needed to complete: __2hr___
 ## Credits and Collaborations
 Give credit (and a link) to other people or resources that helped you build this application. 
