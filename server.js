@@ -26,6 +26,14 @@ function Location(query, res) {
 function Weather(day) {
   this.forecast = day.summary;
   this.time = new Date(day.time * 1000).toDateString();
+  this.created_at=Date.now();
+}
+Weather.tableName='weather';
+Weather.deleteByLocationId=deleteByLocationId;
+
+function deleteByLocationId(table,city){
+  const SQL=`DELETE from ${table} WHERE location_id=${city};`;
+  return client.query(SQL);
 }
 
 function Event(event) {
@@ -116,8 +124,8 @@ function notExist(url,res){
       .then(result => {
         const weatherSummaries = result.body.daily.data.map(day => {
           const newWeather=new Weather(day);
-          let insertStatement='INSERT INTO weather (forecast,time,location_id) VALUES ($1,$2,$3)';
-          let weatherValues=[newWeather.forecast,newWeather.time,locationID];
+          let insertStatement='INSERT INTO weather (forecast,time,created_at,location_id) VALUES ($1,$2,$3,$4)';
+          let weatherValues=[newWeather.forecast,newWeather.time,newWeather.created_at,locationID];
           client.query(insertStatement,weatherValues);
           return newWeather;
         });
@@ -138,22 +146,37 @@ function notExist(url,res){
         });
         res.send(events);
       });
-
   }
-
-
 }
+
 
 
 function lookupDatabase(sqlStatement,query,res,url){
   const values=[query.id];
   return client.query(sqlStatement,values)
     .then((data)=>{
+      console.log(data);
       if(data.rowCount>0){
-        console.log('get data from db');
-        exist(data.rows,res);
+        if(url.includes('forecast')){
+          console.log('hitting the cache invalidation');
+          let ageOfResultsInMin=(Date.now()-data.rows[0].created_at)/(1000*60);
+          if(ageOfResultsInMin>30){
+            console.log('this is old data, gonna delete it');
+            Weather.deleteByLocationId('weather',query.id);
+            notExist(url,res);
+          }
+          else{
+            console.log('still good data');
+            exist(data.rows,res);
+          }
+        }
+        else{
+          console.log('exsits data but not weather');
+          exist(data.rows,res);
+        }
       }
       else{
+        console.log('new data');
         notExist(url,res);
       }
     });
@@ -165,7 +188,7 @@ function lookupDatabase(sqlStatement,query,res,url){
 
 
 app.get('/yelp',getYelp);
-//yelp constructor 
+//yelp constructor
 function Yelp(item){
   this.name=item.name;
   this.rating=item.rating;
