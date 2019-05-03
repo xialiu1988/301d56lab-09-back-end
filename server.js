@@ -165,8 +165,8 @@ function lookupDatabase(sqlStatement,query,res,url){
         if(url.includes('forecast')){
           console.log('hitting the cache invalidation');
           let ageOfResultsInMin=(Date.now()-data.rows[0].created_at)/(1000*60);
-          //check if the weather data is longer than 15 mins just for test, if longer than 3 min delete the old one and get new data.
-          if(ageOfResultsInMin>15){
+          //check if the weather data is longer than 1 mins just for test, if longer than 1 min delete the old one and get new data.
+          if(ageOfResultsInMin>1){
             console.log('this is old data, gonna delete it');
             Weather.deleteByLocationId('weather',query.id);
             notExist(url,res);
